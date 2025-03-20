@@ -342,15 +342,15 @@ jobs:
             fi
           fi
 
-      # - name: Extra Kernel Options
-      #   run: |
-      #     # Only ${{ env.DEVICE_NAME }} use it.
-      #     cd $GITHUB_WORKSPACE/device_kernel
-      #     # echo "CONFIG_CPU_BIG_ENDIAN=n" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-      #     # echo "CONFIG_COMPAT_VDSO=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-      #     # echo "CONFIG_LTO_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-      #     # echo "CONFIG_INIT_STACK_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-      #     # sed -i 's/# CONFIG_SECCOMP is not set/CONFIG_SECCOMP=y/' ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      - name: Extra Kernel Options
+        run: |
+          # Only ${{ env.DEVICE_NAME }} use it.
+          cd $GITHUB_WORKSPACE/device_kernel
+          # echo "CONFIG_CPU_BIG_ENDIAN=n" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          # echo "CONFIG_COMPAT_VDSO=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          # echo "CONFIG_LTO_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          # echo "CONFIG_INIT_STACK_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          # sed -i 's/# CONFIG_SECCOMP is not set/CONFIG_SECCOMP=y/' ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
 
       - name: Added mkdtboimg to kernel (Experiment)
         if: env.HAVE_NO_DTBO == 'true'
