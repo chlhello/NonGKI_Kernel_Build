@@ -33,6 +33,7 @@ jobs:
               KERNEL_BRANCH
               CLANG_SOURCE
               CLANG_BRANCH
+              GCC_GNU
               GCC_64_SOURCE
               GCC_64_BRANCH
               GCC_32_SOURCE
@@ -44,7 +45,11 @@ jobs:
               KERNELSU_NAME
               SUSFS_ENABLE
               SUSFS_FIXED
+              AK3_SOURCE
+              AK3_BRANCH
               BOOT_SOURCE
+              LXC_ENABLE
+              HAVE_NO_DTBO
               ROM_TEXT
 
           )
