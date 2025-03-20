@@ -1,11 +1,11 @@
-name: Mix2s with MKSU-SKN
+name: Build Mix2s_MKSU
 on:
   workflow_call:
   workflow_dispatch:
 env:
   PACK_METHOD: "Anykernel3" # Anykernel3 need SOURCE and BRANCH, MKBOOTIMG needn't it.
   KERNELSU_METHOD: "shell" # shell, manual and only.
-  PATCHES_SOURCE: "JackA1ltman/NonGKI_Kernel_Patches" # [your_name]/[your_patch] -> gooder123/NonGKI_Patcher
+  PATCHES_SOURCE: "chlhello/NonGKI_Kernel_Patches" # [your_name]/[your_patch] -> gooder123/NonGKI_Patcher
   PATCHES_BRANCH: "mi_kernel" # [your_branch] -> main
   HOOK_METHOD: "normal" # manual hook method,can choice vfs and normal.
   PROFILE_NAME: "polaris_miui_a10.env" # your profile name.
@@ -14,7 +14,7 @@ env:
 jobs:
   build:
     name: Build Kernel by ${{ github.actor }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
@@ -302,12 +302,13 @@ jobs:
           else
             if [[ ${{ env.HOOK_METHOD }} == "normal" ]]; then
               if [[ -f "/tmp/Patches/normal_patches.sh" ]]; then
-                  cp /tmp/Patches/normal_patches.sh $GITHUB_WORKSPACE/device_kernel/
+                  cp /tmp/Patches/normal_patches.sh device_kernel/
                   cd device_kernel
                   bash normal_patches.sh
                   echo "execuated patch successfully."
                   if [ $KERNEL -lt 5 ] && [ $PATCHLEVEL -lt 14 ]; then
-                      cp /tmp/Patches/extra_patches.sh $GITHUB_WORKSPACE/device_kernel/
+                      cp /tmp/Patches/extra_patches.sh device_kernel/
+                      cd device_kernel
                       bash extra_patches.sh
                       echo "execuated extra patch successfully."
                   else
@@ -341,15 +342,15 @@ jobs:
             fi
           fi
 
-      - name: Extra Kernel Options
-        run: |
-          # Only ${{ env.DEVICE_NAME }} use it.
-          cd $GITHUB_WORKSPACE/device_kernel
-          # echo "CONFIG_CPU_BIG_ENDIAN=n" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-          # echo "CONFIG_COMPAT_VDSO=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-          # echo "CONFIG_LTO_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-          # echo "CONFIG_INIT_STACK_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
-          # sed -i 's/# CONFIG_SECCOMP is not set/CONFIG_SECCOMP=y/' ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      # - name: Extra Kernel Options
+      #   run: |
+      #     # Only ${{ env.DEVICE_NAME }} use it.
+      #     cd $GITHUB_WORKSPACE/device_kernel
+      #     # echo "CONFIG_CPU_BIG_ENDIAN=n" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      #     # echo "CONFIG_COMPAT_VDSO=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      #     # echo "CONFIG_LTO_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      #     # echo "CONFIG_INIT_STACK_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+      #     # sed -i 's/# CONFIG_SECCOMP is not set/CONFIG_SECCOMP=y/' ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
 
       - name: Added mkdtboimg to kernel (Experiment)
         if: env.HAVE_NO_DTBO == 'true'
@@ -410,7 +411,7 @@ jobs:
             if [[ "${{ env.KERNELSU_SOURCE }}" =~ ".sh" && "${{ env.KERNELSU_BRANCH }}" =~ "susfs" ]]; then
                 echo "KernelSU-Next SuSFS Branch detected!"
             elif [[ "${{ env.KERNELSU_SOURCE }}" =~ ".sh" ]]; then
-          curl -O "${{ env.KERNELSU_SOURCE }}"
+                git clone ${{ env.KERNELSU_SOURCE }} -b ${{ env.KERNELSU_BRANCH }}-susfs susfs_fixed
                 rsync -av --exclude='.git' susfs_fixed/kernel/ KernelSU-Next/kernel/
             fi
           elif [[ "${{ env.KERNELSU_SUS_PATCH }}" == "true" ]]; then
@@ -423,13 +424,9 @@ jobs:
         if: env.SUSFS_ENABLE == 'true' && env.SUSFS_FIXED == 'true'
         run: |
           cd $GITHUB_WORKSPACE/device_kernel/
-          cp NonGKI_Kernel_Patches/mix2s_evox_a15/cmdline_fixed.patch ./
-          cp NonGKI_Kernel_Patches/mix2s_evox_a15/task_mmu_fixed.patch ./
-          cp NonGKI_Kernel_Patches/mix2s_evox_a15/fdinfo_fixed.patch ./
+          cp NonGKI_Kernel_Patches/[patch_folder]/[patch_file].patch ./
 
-          patch -p1 < cmdline_fixed.patch || true
-          patch -p1 < task_mmu_fixed.patch || true
-          patch -p1 < fdinfo_fixed.patch || true
+          patch -p1 < [patch_file].patch || true
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -446,7 +443,7 @@ jobs:
             make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }}
           else
             make CC="ccache clang" O=out ARCH=arm64 ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} ${{ env.DEFCONFIG_NAME }}
-            make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }} CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+            make -j$(nproc --all) CC="ccache clang" O=out ARCH=arm64 ${{ env.CUSTOM_CMDS }} ${{ env.EXTRA_CMDS }} ${{ env.GCC_64 }} ${{ env.GCC_32 }}
           fi
 
       - name: Make Anykernel3 Flasher
@@ -541,9 +538,10 @@ jobs:
           path: |
             device_kernel/${{ env.PACK_NAME }}
 
-      - name: Upload Build Artifacts
+      - name: Upload Build Artifacts For Anykernel3
+        if: env.PACK_METHOD == 'MKBOOTIMG'
         uses: actions/upload-artifact@v4
         with:
           name: Kernel-${{ env.PACK_NAME }}
           path: |
-            device_kernel/${{ env.PACK_NAME }}
+            ${{ env.PACK_NAME }}
