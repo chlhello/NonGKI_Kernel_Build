@@ -302,18 +302,18 @@ jobs:
           else
             if [[ ${{ env.HOOK_METHOD }} == "normal" ]]; then
               if [[ -f "/tmp/Patches/normal_patches.sh" ]]; then
-                  cp /tmp/Patches/normal_patches.sh device_kernel/
+                  cp /tmp/Patches/normal_patches.sh $GITHUB_WORKSPACE/device_kernel/
                   cd device_kernel
                   bash normal_patches.sh
                   echo "execuated patch successfully."
                   if [ $KERNEL -lt 5 ] && [ $PATCHLEVEL -lt 14 ]; then
-                      cp /tmp/Patches/extra_patches.sh device_kernel/
-                      cd device_kernel
+                      cp /tmp/Patches/extra_patches.sh .
                       bash extra_patches.sh
                       echo "execuated extra patch successfully."
                   else
                       echo "your kernel needn't the patch."
                   fi
+                  cd $GITHUB_WORKSPACE
               else
                   echo "Cannot found normal_patches.sh in build project , please check u file existed in build project !"
                   false
@@ -325,8 +325,7 @@ jobs:
                   bash vfs_hook_patches.sh
                   echo "execuated vfs patch successfully."
                   if [ $KERNEL -lt 5 ] && [ $PATCHLEVEL -lt 14 ]; then
-                      cp /tmp/Patches/extra_patches.sh device_kernel/
-                      cd device_kernel
+                      cp /tmp/Patches/extra_patches.sh .
                       bash extra_patches.sh
                       echo "execuated extra patch successfully."
                   else
