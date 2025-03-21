@@ -1,4 +1,4 @@
-name: Build Mix2s_MKSU
+name: Build Mix2s_KSU
 on:
   workflow_call:
   workflow_dispatch:
