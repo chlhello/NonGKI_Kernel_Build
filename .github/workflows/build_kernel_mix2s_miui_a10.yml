@@ -5,9 +5,9 @@ on:
 env:
   PACK_METHOD: "Anykernel3" # Anykernel3 need SOURCE and BRANCH, MKBOOTIMG needn't it.
   KERNELSU_METHOD: "shell" # shell, manual and only.
-  PATCHES_SOURCE: "JackA1ltman/NonGKI_Kernel_Patches" # [your_name]/[your_patch] -> gooder123/NonGKI_Patcher
+  PATCHES_SOURCE: "chlhello/NonGKI_Kernel_Patches" # [your_name]/[your_patch] -> gooder123/NonGKI_Patcher
   PATCHES_BRANCH: "mi_kernel" # [your_branch] -> main
-  # HOOK_METHOD: "normal" # manual hook method,can choice vfs and normal.
+  #HOOK_METHOD: "normal" # manual hook method,can choice vfs and normal.
   PROFILE_NAME: "polaris_miui_a10.env" # your profile name.
   KERNELSU_SUS_PATCH: "false" # if u need manual susfs patch to kernelsu.
 jobs:
@@ -297,9 +297,9 @@ jobs:
           if [[ -d "NonGKI_Kernel_Patches" ]]; then
             echo "Folder existed."
           else
-            git clone https://github.com/JackA1ltman/NonGKI_Kernel_Patches.git -b mi_kernel NonGKI_Kernel_Patches
+            git clone https://github.com/chlhello/NonGKI_Kernel_Patches.git -b mi_kernel NonGKI_Kernel_Patches
           fi
-
+          cp NonGKI_Kernel_Patches/namespace.c fs/
           cp NonGKI_Kernel_Patches/patches.sh ./
           cp NonGKI_Kernel_Patches/extra_patches.sh ./
 
@@ -358,11 +358,16 @@ jobs:
         run: |
           # Only ${{ env.DEVICE_NAME }} use it.
           cd $GITHUB_WORKSPACE/device_kernel
+          echo "CONFIG_KPROBES=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          echo "CONFIG_HAVE_KPROBES=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+          echo "CONFIG_KPROBE_EVENTS=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+         
           # echo "CONFIG_CPU_BIG_ENDIAN=n" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
           # echo "CONFIG_COMPAT_VDSO=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
           # echo "CONFIG_LTO_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
           # echo "CONFIG_INIT_STACK_NONE=y" >> ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
           # sed -i 's/# CONFIG_SECCOMP is not set/CONFIG_SECCOMP=y/' ./arch/arm64/configs/${{ env.DEFCONFIG_NAME }}
+
 
       - name: Added mkdtboimg to kernel (Experiment)
         if: env.HAVE_NO_DTBO == 'true'
